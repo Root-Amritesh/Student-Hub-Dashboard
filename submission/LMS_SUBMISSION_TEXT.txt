@@ -11,11 +11,12 @@ Files to upload through the designated submission link:
 
 Deadline: 27 / 11 / 2026
 
-Team details for the Team Leader form (fill missing fields):
-- Team Leader: Amritesh Kumar — Enrollment No: [FILL], Section: [FILL]
-- Member: Naved Ali — Enrollment No: [FILL], Section: [FILL]
-- Member: Aryan Chahal — Enrollment No: [FILL], Section: [FILL]
-- Member: Tanishk Singh — Enrollment No: [FILL], Section: [FILL]
+Team details for the Team Leader form:
+- Team Leader: Amritesh Kumar — S26CSEU0943
+- Member: Naved Ali — S26CSEU0955
+- Member: Aryan Chahal — S26CSEU0930
+- Member: Tanishk Singh — S26CSEU0934
+- Section: [FILL]
 - Proposed project title: UniDesk Student Hub - A Zero-Dependency Responsive Study Workspace
 
 IMPORTANT
