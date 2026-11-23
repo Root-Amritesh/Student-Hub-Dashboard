@@ -16,7 +16,7 @@ Team details for the Team Leader form:
 - Member: Naved Ali — S26CSEU0955
 - Member: Aryan Chahal — S26CSEU0930
 - Member: Tanishk Singh — S26CSEU0934
-- Section: [FILL]
+- Section: B-27 S-14
 - Proposed project title: UniDesk Student Hub - A Zero-Dependency Responsive Study Workspace
 
 IMPORTANT

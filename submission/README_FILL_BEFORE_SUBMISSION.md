@@ -1,6 +1,6 @@
 # Before you upload — final checklist
 
-The report and ZIP are generated and validated. Only **section, dates and signatures** are left to fill in the report.
+The report and ZIP are generated and validated. Section and enrollment numbers are filled. Only **dates and signatures** are left.
 
 ## 1. Fill these in `UniDesk_Student_Hub_Project_Report.docx`
 
@@ -8,9 +8,10 @@ Search for `[FILL` and replace every occurrence:
 
 | Location | What to enter |
 | --- | --- |
-| Cover page | Your **section** |
 | Certificate | Dates and signatures for the four members and the guide |
 | Declaration | Dates and signatures for the four members |
+
+Section is already filled as **B-27 S-14**.
 
 Enrollment numbers are already filled:
 
