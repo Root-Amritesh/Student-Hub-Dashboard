@@ -59,6 +59,16 @@ All asset paths are relative (`./assets/...`), so the app runs from a single ext
 3. Compress the parent folder into `UniDesk_StudentHub_2026FSWD100.zip`.
 4. Each team member uploads the **ZIP** and the **Word/PDF report** individually before **27/11/2026**.
 
+### Ready-to-submit files (`submission/`)
+
+| File | Purpose |
+|---|---|
+| `UniDesk_StudentHub_2026FSWD100.zip` | Verified 23-entry offline package (root folder + local assets + docs + 6 screenshots) |
+| `UniDesk_Student_Hub_Project_Report.docx` | Editable 23-page report — fill `[FILL]` fields (section, enrollment numbers, signatures) |
+| `UniDesk_Student_Hub_Project_Report.pdf` | PDF generated from the edited DOCX, ready to upload |
+| `LMS_SUBMISSION_TEXT.txt` | Exact project title, team-details data and upload checklist |
+| `README_FILL_BEFORE_SUBMISSION.md` | Final fill-and-upload instructions |
+
 ## Audio assets
 
 `assets/audio/` contains royalty-free local MP3 loops used by the study player:

@@ -1,0 +1,24 @@
+WEB DEVELOPMENT MINI-PROJECT — LMS SUBMISSION DETAILS
+====================================================
+
+Project title (paste into the online text submission box):
+UniDesk Student Hub - A Zero-Dependency Responsive Study Workspace
+
+Files to upload through the designated submission link:
+1. UniDesk_StudentHub_2026FSWD100.zip
+2. UniDesk_Student_Hub_Project_Report.pdf
+   (Use the .docx instead only if the LMS explicitly requires Word.)
+
+Deadline: 27 / 11 / 2026
+
+Team details for the Team Leader form (fill missing fields):
+- Team Leader: Amritesh Kumar — Enrollment No: [FILL], Section: [FILL]
+- Member: Naved Ali — Enrollment No: [FILL], Section: [FILL]
+- Member: Aryan Chahal — Enrollment No: [FILL], Section: [FILL]
+- Member: Tanishk Singh — Enrollment No: [FILL], Section: [FILL]
+- Proposed project title: UniDesk Student Hub - A Zero-Dependency Responsive Study Workspace
+
+IMPORTANT
+- All four students must submit BOTH the ZIP and the report individually.
+- Only the Team Leader submits the team-details form once.
+- No extension will be granted, so upload before the deadline.
