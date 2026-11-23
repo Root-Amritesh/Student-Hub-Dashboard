@@ -17,18 +17,8 @@
           <img class="brand-logo" src="assets/img/unidesk-logo.svg" alt="UniDesk emblem" width="40" height="40" />
           <span class="brand-name">UniDesk</span>
         </a>
-        <nav id="sidebar-nav" aria-label="Primary">
-          <ul class="nav-list">
-            <li><a class="nav-link" href="#sec-dashboard" data-nav="dashboard">Dashboard</a></li>
-            <li><a class="nav-link" href="#sec-tasks" data-nav="tasks">Tasks</a></li>
-            <li><a class="nav-link" href="#sec-timetable" data-nav="timetable">Timetable</a></li>
-            <li><a class="nav-link" href="#sec-notes" data-nav="notes">Notes</a></li>
-            <li><a class="nav-link" href="#sec-resources" data-nav="resources">Resources</a></li>
-            <li><a class="nav-link" href="#sec-focus" data-nav="focus">Focus &amp; Study</a></li>
-          </ul>
-        </nav>
         <div class="header-actions">
-          <button id="theme-toggle" class="btn btn-ghost btn-sm" type="button" aria-label="Toggle light or dark theme">
+          <button id="theme-toggle" class="btn btn-ghost btn-sm" type="button">
             <span id="theme-toggle-label">Switch to Dark</span>
           </button>
           <button id="prefs-open" class="btn btn-primary btn-sm" type="button" aria-haspopup="dialog" aria-controls="prefs-modal">Preferences</button>
@@ -37,6 +27,16 @@
     </header>
 
     <div class="app-body">
+      <nav id="sidebar-nav" aria-label="Primary">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="#sec-dashboard" data-nav="dashboard">Dashboard</a></li>
+          <li><a class="nav-link" href="#sec-tasks" data-nav="tasks">Tasks</a></li>
+          <li><a class="nav-link" href="#sec-timetable" data-nav="timetable">Timetable</a></li>
+          <li><a class="nav-link" href="#sec-notes" data-nav="notes">Notes</a></li>
+          <li><a class="nav-link" href="#sec-resources" data-nav="resources">Resources</a></li>
+          <li><a class="nav-link" href="#sec-focus" data-nav="focus">Focus &amp; Study</a></li>
+        </ul>
+      </nav>
       <main id="app-main" class="app-main">
         <!-- ==================== 01. DASHBOARD ==================== -->
         <section class="module module-active" id="sec-dashboard" aria-labelledby="dashboard-title">
@@ -122,7 +122,7 @@
             </div>
             <div class="form-actions">
               <button id="task-submit" class="btn btn-primary" type="submit">Add Task</button>
-              <button id="task-cancel-edit" class="btn btn-ghost" type="submit" hidden>Cancel Edit</button>
+              <button id="task-cancel-edit" class="btn btn-ghost" type="button" hidden>Cancel Edit</button>
             </div>
           </form>
 
@@ -164,13 +164,19 @@
             <div class="panel-head panel-head-row">
               <div>
                 <h3>Class Routine</h3>
-                <p class="panel-subtitle">Default routine — Monday to Saturday</p>
+                <p class="panel-subtitle">Fixed Monday–Saturday routine · single-click Present · double-click Absent</p>
               </div>
-              <button id="restore-default" class="btn btn-ghost btn-sm" type="button">Restore Default Routine</button>
+              <div class="routine-tools">
+                <div class="date-picker">
+                  <label for="attendance-date">Marking date</label>
+                  <input id="attendance-date" type="date" />
+                </div>
+                <button id="restore-default" class="btn btn-ghost btn-sm" type="button">Restore Default Routine</button>
+              </div>
             </div>
             <div class="period-layout">
               <div id="timetable-grid" class="period-grid" role="group" aria-label="College timetable"></div>
-              <aside class="card period-form-card" aria-labelledby="custom-period-title">
+              <aside class="period-form-card" aria-labelledby="custom-period-title">
                 <h3 id="custom-period-title">Add Custom Period</h3>
                 <form id="custom-period-form" class="form-grid" novalidate>
                   <p class="field-error" id="cp-error" aria-live="polite"></p>
@@ -229,15 +235,12 @@
             <div class="panel-head panel-head-row">
               <div>
                 <h3>Subject Attendance</h3>
-                <p class="panel-subtitle">Present / Absent tallies with shortage alerts</p>
-              </div>
-              <div class="date-picker">
-                <label for="attendance-date">Date</label>
-                <input id="attendance-date" type="date" />
+                <p class="panel-subtitle" id="attendance-subtitle">All marked dates · minimum 75%</p>
               </div>
             </div>
             <div class="table-wrap">
               <table id="attendance-table" class="data-table">
+                <caption class="visually-hidden">Subject-wise attendance across all marked dates</caption>
                 <thead>
                   <tr>
                     <th scope="col">Subject</th>
@@ -293,7 +296,7 @@
             </div>
             <div class="form-actions">
               <button id="note-submit" class="btn btn-primary" type="submit">Save Note</button>
-              <button id="note-cancel-edit" class="btn btn-ghost" type="submit" hidden>Cancel Edit</button>
+              <button id="note-cancel-edit" class="btn btn-ghost" type="button" hidden>Cancel Edit</button>
             </div>
           </form>
 
@@ -338,7 +341,7 @@
             </div>
             <div class="form-actions">
               <button id="resource-submit" class="btn btn-primary" type="submit">Add Resource</button>
-              <button id="resource-cancel-edit" class="btn btn-ghost" type="submit" hidden>Cancel Edit</button>
+              <button id="resource-cancel-edit" class="btn btn-ghost" type="button" hidden>Cancel Edit</button>
             </div>
           </form>
 
@@ -383,7 +386,7 @@
 
             <div class="card audio-card" id="audio-card">
               <h3>Study Audio</h3>
-              <audio id="study-audio" controls loop preload="metadata" src="assets/audio/rain-study.mp3"></audio>
+              <audio id="study-audio" controls loop preload="metadata" src="assets/audio/rain-study.mp3">Your browser does not support the audio element.</audio>
               <p class="field-error" id="audio-error" hidden></p>
               <div class="field">
                 <label id="track-label">Track</label>
@@ -500,6 +503,18 @@
       <div class="form-actions">
         <button id="res-confirm" class="btn btn-danger" type="button">Delete</button>
         <button id="res-cancel" class="btn btn-ghost" type="button">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Restore routine confirmation -->
+  <dialog id="dialog-restore" class="modal-dialog" aria-labelledby="restore-dialog-title">
+    <div class="dialog-card">
+      <h3 id="restore-dialog-title">Restore default routine?</h3>
+      <p class="muted">This replaces your current class routine with the built-in Monday–Saturday timetable. Your attendance history is kept.</p>
+      <div class="form-actions">
+        <button id="restore-confirm" class="btn btn-danger" type="button">Restore Routine</button>
+        <button id="restore-cancel" class="btn btn-ghost" type="button">Cancel</button>
       </div>
     </div>
   </dialog>

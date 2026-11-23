@@ -3,6 +3,8 @@
 
 UniDesk is a **zero-dependency, client-side student productivity web application** engineered exclusively with **HTML5, CSS3, and vanilla ES6+ JavaScript** for the first-semester B.Tech CSE Web Development mini-project (**2026FSWD100**) at Bennett University.
 
+**Live deployment:** https://student-hub-three-weld.vercel.app/
+
 Built by the four-member fresher team ahead of the **November 27, 2026 LMS deadline**:
 
 | Member | Role | Ownership |
@@ -20,7 +22,7 @@ Six connected modules plus Preferences:
 
 1. **01. Dashboard (`#sec-dashboard`)** — Time-aware greeting with saved display name, four Bento KPI tiles (Open Tasks, Tasks Due Today, Completion Rate with `<progress>`, Today's Attendance), today's classes sorted by start time, overdue/upcoming tasks, royal-blue Focus Mode hero.
 2. **02. Tasks (`#sec-tasks`)** — Full CRUD with unique string IDs, inline JS validation (title 2–100 chars, subject, due date `YYYY-MM-DD`), five filter chips, live search, sorting, confirmed delete.
-3. **03. Timetable & Attendance (`#sec-timetable`)** — `DEFAULT_COLLEGE_TIMETABLE` isolated constant (paste your fixed Mon–Sat routine), custom period add/edit/delete, half-open interval overlap validation, single-click Present / double-click Absent, accessible P/A/Clear micro-buttons, semantic `<table>` ledger with 75% shortage flag.
+3. **03. Timetable & Attendance (`#sec-timetable`)** — `DEFAULT_COLLEGE_TIMETABLE` isolated constant (paste your fixed Mon–Sat routine), custom period add/edit/delete, half-open interval overlap validation, single-click Present / double-click Absent, accessible P/A/Clear micro-buttons, semantic `<table>` ledger aggregating every marked date with a configurable shortage threshold (default 75%).
 4. **04. Notes (`#sec-notes`)** — Pastel note cards (amber/coral/lime/lavender/sky), CRUD, live search, snippet preview, updated timestamp, confirmed delete.
 5. **05. Resources (`#sec-resources`)** — Curated bookmarks (MDN, GitHub Pages, OWASP, W3C), `http(s)://` URL validation via `new URL()`, safe external anchors, CRUD, search, category filter.
 6. **06. Focus & Study Audio (`#sec-focus`)** — Focus timer (15/25/45 min presets, Start/Pause/Reset) + HTML5 `<audio id="study-audio" controls loop>` player with 3 local tracks, track picker, loop toggle, volume slider, play/pause sync, graceful error handling.

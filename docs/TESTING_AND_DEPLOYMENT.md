@@ -8,7 +8,9 @@
 - Double-click a period → Absent; confirm Present never flashes first; single-click → Present; refresh → persists and updates table.
 - Create pastel notes, search bodies; `javascript:alert(1)` resource URL rejected; external links open in new tab with `rel="noopener noreferrer"`.
 - Play each track, toggle loop, switch sections mid-play, rename MP3 → friendly missing-file error, no uncaught Promise exceptions.
-- Change display name, toggle dark, refresh, Reset Data; DevTools → Application → Local Storage shows only `unidesk.v1.*` keys cleared; 375 px → zero horizontal scroll (`document.documentElement.scrollWidth <= window.innerWidth`).
+- Change display name, toggle dark, refresh, Reset Data; DevTools → Application → Local Storage shows only `unidesk.v1.*` keys cleared.
+- Check 375 px, 800 px and 1024 px: zero horizontal scroll (`document.documentElement.scrollWidth <= document.documentElement.clientWidth`), sidebar hidden below 768 px, fixed mobile navigation visible below 768 px.
+- Run Lighthouse on each module; target 100 for Accessibility, Best Practices and SEO.
 
 ## 2. LMS ZIP submission
 

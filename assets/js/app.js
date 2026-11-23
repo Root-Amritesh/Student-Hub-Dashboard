@@ -37,6 +37,7 @@ const DEFAULT_COLLEGE_TIMETABLE = [
 const STORAGE_PREFIX = "unidesk.v1.";
 const memoryStore = {};
 let storageAvailable = true;
+let storageWarningShown = false;
 
 function loadState(key, fallback) {
   try {
@@ -60,20 +61,24 @@ function saveState(key, value) {
   } catch (err) {
     memoryStore[key] = value;
     storageAvailable = false;
-    showToast("Browser storage is unavailable — UniDesk is running on in-memory data for this session.");
+    if (!storageWarningShown) {
+      storageWarningShown = true;
+      showToast("Browser storage is unavailable — UniDesk is running on in-memory data for this session.");
+    }
     return false;
   }
 }
 
 function clearUniDeskKeys() {
-  const removed = [];
+  const keys = [];
   try {
     for (let i = 0; i < window.localStorage.length; i += 1) {
       const k = window.localStorage.key(i);
-      if (k && k.startsWith(STORAGE_PREFIX)) { window.localStorage.removeItem(k); removed.push(k); }
+      if (k && k.startsWith(STORAGE_PREFIX)) { keys.push(k); }
     }
+    keys.forEach((k) => { window.localStorage.removeItem(k); });
   } catch (err) { /* storage blocked — nothing to clear */ }
-  return removed.length;
+  return keys.length;
 }
 
 /* ---------- 3. Local-date helpers (IST-safe) ---------- */
@@ -92,8 +97,10 @@ function addDaysToKey(key, days) {
   return getLocalDateKey(d);
 }
 
+const WEEKDAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 function dayNameFromKey(key) {
-  return new Date(key + "T00:00:00").toLocaleDateString(undefined, { weekday: "short" });
+  return WEEKDAY_KEYS[new Date(key + "T00:00:00").getDay()] || "Mon";
 }
 
 function formatLongDate(key) {
@@ -222,11 +229,23 @@ function makeEl(tag, className, text) {
 }
 
 /* ---------- 9. Navigation ---------- */
+const NAV_SECTIONS = ["dashboard", "tasks", "timetable", "notes", "resources", "focus"];
+
+function updateNavActive(sectionId) {
+  const activeName = String(sectionId || "").replace(/^sec-/, "");
+  document.querySelectorAll("a[data-nav]").forEach((link) => {
+    const isActive = link.getAttribute("data-nav") === activeName;
+    link.classList.toggle("active", isActive);
+    if (isActive) { link.setAttribute("aria-current", "page"); } else { link.removeAttribute("aria-current"); }
+  });
+}
+
 function showSection(id) {
   const target = document.getElementById(id);
   if (!target) { return; }
   document.querySelectorAll("section.module").forEach((section) => { section.classList.remove("module-active"); });
   target.classList.add("module-active");
+  updateNavActive(id);
   if (window.location.hash !== "#" + id) { window.location.hash = id; }
   target.scrollIntoView({ behavior: "auto", block: "start" });
 }
@@ -239,9 +258,9 @@ function handleNavClick(event) {
 }
 
 function handleHashChange() {
-  const hash = window.location.hash.replace("#", "");
-  const valid = ["dashboard", "tasks", "timetable", "notes", "resources", "focus"].includes(hash);
-  if (valid) { showSection("sec-" + hash); }
+  const raw = window.location.hash.replace("#", "");
+  const hash = raw.startsWith("sec-") ? raw.slice(4) : raw;
+  if (NAV_SECTIONS.includes(hash)) { showSection("sec-" + hash); }
 }
 
 /* ---------- 10. Theme ---------- */
@@ -252,11 +271,14 @@ function applyTheme(theme) {
   persistState("prefs");
   const label = document.getElementById("theme-toggle-label");
   if (label) { label.textContent = next === "light" ? "Switch to Dark" : "Switch to Light"; }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) { meta.setAttribute("content", next === "dark" ? "#0F172A" : "#2563EB"); }
+  const select = document.getElementById("prefs-theme");
+  if (select) { select.value = next; }
 }
 
 function initTheme() {
-  const label = document.getElementById("theme-toggle-label");
-  if (label) { label.textContent = state.prefs.theme === "dark" ? "Switch to Light" : "Switch to Dark"; }
+  applyTheme(state.prefs.theme);
 }
 
 /* ---------- 11. Dashboard ---------- */
@@ -282,12 +304,18 @@ function renderKpiCards() {
   const todaysClasses = (Array.isArray(state.timetable) ? state.timetable : []).filter((t) => t.day === todayDayName);
   const presentCount = todaysClasses.filter((c) => attendance[c.id] === "present").length;
   const absentCount = todaysClasses.filter((c) => attendance[c.id] === "absent").length;
+  const markedCount = presentCount + absentCount;
+  const attendanceHint = !todaysClasses.length
+    ? "No classes scheduled today"
+    : markedCount
+      ? markedCount + " of " + todaysClasses.length + " classes marked today"
+      : "No attendance marked yet today";
 
   const kpiDefs = [
     { title: "Open Tasks", value: String(openTasks.length), hint: completedTasks.length + " of " + tasks.length + " tasks completed" },
     { title: "Tasks Due Today", value: String(dueToday.length), hint: dueToday.length ? "One or more deadlines today" : "Nothing due today — nice work" },
     { title: "Completion Rate", value: completionPct + "%", hint: "Use the progress bar", progress: completionPct },
-    { title: "Today's Attendance", value: todaysClasses.length ? presentCount + " / " + todaysClasses.length : "—", hint: "Present / absent marks for today" },
+    { title: "Today's Attendance", value: todaysClasses.length ? presentCount + " / " + todaysClasses.length : "—", hint: attendanceHint },
   ];
 
   kpiDefs.forEach((kpi) => {
@@ -315,48 +343,19 @@ function renderTodayClasses() {
   const todayKey = getTodayKey();
   const todayDayName = dayNameFromKey(todayKey);
   const classes = (Array.isArray(state.timetable) ? state.timetable : []).filter((t) => t.day === todayDayName).sort(byStartTime);
-  document.getElementById("today-classes-date").textContent = classes.length ? formatLongDate(todayKey) + " · " + classes.length + " class(es) scheduled" : "No classes scheduled for today.";
+  document.getElementById("today-classes-date").textContent = classes.length
+    ? formatLongDate(todayKey) + " · " + classes.length + " class(es) scheduled"
+    : "No classes scheduled for today.";
 
   if (!classes.length) {
-    const empty = makeEl("p", "empty-state", "No classes scheduled for today.");
-    listEl.appendChild(empty);
+    listEl.appendChild(makeEl("p", "empty-state", "No classes scheduled for today."));
     return;
   }
 
   classes.forEach((cls) => {
-    const status = (state.attendance[attendanceDateKey] || {})[cls.id] || "idle";
-    const item = makeEl("article", "task-card");
-    const top = makeEl("div", "task-top");
-    const dot = makeEl("span", "prio-low");
-    dot.textContent = status === "present" ? "P" : status === "absent" ? "A" : "—";
-    const title = makeEl("h4", "task-title", cls.subject + " · " + cls.type);
-    top.appendChild(dot);
-    top.appendChild(title);
-    const meta = makeEl("div", "task-meta");
-    const timeText = makeEl("span", null, cls.startTime + " – " + cls.endTime);
-    const roomText = makeEl("span", null, "Room " + (cls.room || "—") + " · " + (cls.instructor || ""));
-    meta.appendChild(timeText);
-    meta.appendChild(roomText);
-    item.appendChild(top);
-    item.appendChild(meta);
-    const actions = makeEl("div", "task-actions");
-    const presentBtn = makeEl("button", "btn btn-ghost btn-sm", "Present");
-    presentBtn.type = "button";
-    presentBtn.dataset.action = "present";
-    presentBtn.dataset.id = cls.id;
-    const absentBtn = makeEl("button", "btn btn-ghost btn-sm", "Absent");
-    absentBtn.type = "button";
-    absentBtn.dataset.action = "absent";
-    absentBtn.dataset.id = cls.id;
-    const clearBtn = makeEl("button", "btn btn-ghost btn-sm", "Clear");
-    clearBtn.type = "button";
-    clearBtn.dataset.action = "clear";
-    clearBtn.dataset.id = cls.id;
-    actions.appendChild(presentBtn);
-    actions.appendChild(absentBtn);
-    actions.appendChild(clearBtn);
-    item.appendChild(actions);
-    listEl.appendChild(item);
+    const card = periodCard(cls, todayKey);
+    card.classList.add("dashboard-period-card");
+    listEl.appendChild(card);
   });
 }
 
@@ -570,6 +569,10 @@ function renderTasks() {
   const listEl = document.getElementById("task-list");
   listEl.textContent = "";
   const tasks = getFilteredTasks();
+  if (!tasks.length) {
+    const hasQuery = taskSearch.trim().length > 0 || taskFilter !== "all";
+    listEl.appendChild(makeEl("p", "empty-state", hasQuery ? "No tasks match the current search or filter." : "No tasks yet. Add your first assignment above."));
+  }
   tasks.forEach((task) => { listEl.appendChild(taskCard(task)); });
   const countEl = document.getElementById("task-count");
   if (countEl) { countEl.textContent = tasks.length + " task(s) shown."; }
@@ -631,7 +634,7 @@ function markAttendanceStatus(dateKey, classId, status) {
   state.attendance[key][classId] = status;
   persistState("attendance");
   renderTimetable();
-  renderAttendanceTable(attendanceDateKey);
+  renderAttendanceTable();
   renderDashboard();
 }
 
@@ -665,7 +668,7 @@ function clearAttendance(classId) {
   delete state.attendance[key][classId];
   persistState("attendance");
   renderTimetable();
-  renderAttendanceTable(attendanceDateKey);
+  renderAttendanceTable();
   renderDashboard();
 }
 
@@ -680,7 +683,7 @@ function periodCard(cls, dateKey) {
   if (status === "idle") { card.classList.add("is-idle"); }
 
   const top = makeEl("div", "task-top");
-  const dot = makeEl("span", "prio-low");
+  const dot = makeEl("span", "status-dot status-" + status);
   dot.textContent = status === "present" ? "P" : status === "absent" ? "A" : "—";
   const title = makeEl("h4", "task-title", cls.subject + " · " + cls.type);
   top.appendChild(dot);
@@ -705,6 +708,9 @@ function periodCard(cls, dateKey) {
     btn.type = "button";
     btn.dataset.action = action;
     btn.dataset.id = cls.id;
+    const label = action === "present" ? "Mark present" : action === "absent" ? "Mark absent" : "Clear attendance";
+    btn.setAttribute("aria-label", label + ": " + cls.subject + " at " + cls.startTime);
+    btn.setAttribute("title", label);
     actions.appendChild(btn);
   });
   card.appendChild(actions);
@@ -738,9 +744,10 @@ function renderTimetable() {
     const classes = (Array.isArray(state.timetable) ? state.timetable : []).filter((t) => t.day === day).sort(byStartTime);
     const column = makeEl("div", "period-column");
     column.setAttribute("data-day", day);
+    if (day === dayNameFromKey(getTodayKey())) { column.classList.add("is-today"); }
     const heading = makeEl("h4", null, day);
     const list = makeEl("div", "period-list");
-    list.className = "period-list";
+    if (!classes.length) { list.appendChild(makeEl("p", "empty-state", "No classes")); }
     classes.forEach((cls) => { list.appendChild(periodCard(cls, attendanceDateKey)); });
     column.appendChild(heading);
     column.appendChild(list);
@@ -748,46 +755,63 @@ function renderTimetable() {
   });
 }
 
-function renderAttendanceTable(dateKey) {
+function renderAttendanceTable() {
   const tbody = document.getElementById("attendance-tbody");
   tbody.textContent = "";
-  const dayName = dayNameFromKey(dateKey);
-  const classes = (Array.isArray(state.timetable) ? state.timetable : []).filter((t) => t.day === dayName).sort(byStartTime);
   const targetPct = Number(state.prefs.attendanceTargetPct) || 75;
+  const subtitle = document.getElementById("attendance-subtitle");
+  if (subtitle) { subtitle.textContent = "All marked dates · minimum " + targetPct + "%"; }
 
+  const classes = Array.isArray(state.timetable) ? state.timetable : [];
   if (!classes.length) {
     const row = makeEl("tr", null);
-    const cell = makeEl("td", null, "colspan=\"6\"");
+    const cell = makeEl("td", null, "No classes in your timetable yet.");
     cell.colSpan = 6;
-    cell.textContent = "No classes scheduled for this date.";
     row.appendChild(cell);
     tbody.appendChild(row);
     return;
   }
 
+  const classesById = {};
+  classes.forEach((cls) => { classesById[cls.id] = cls; });
+
   const subjects = {};
-  classes.forEach((cls) => {
-    const key = cls.subject || cls.code || "Unknown";
-    if (!subjects[key]) { subjects[key] = { subject: key, present: 0, absent: 0, total: 0 }; }
-    subjects[key].total += 1;
-    const status = ((state.attendance[dateKey] || {})[cls.id]) || null;
-    if (status === "present") { subjects[key].present += 1; }
-    if (status === "absent") { subjects[key].absent += 1; }
+  function subjectRow(name) {
+    if (!subjects[name]) { subjects[name] = { subject: name, present: 0, absent: 0, total: 0 }; }
+    return subjects[name];
+  }
+  classes.forEach((cls) => { subjectRow(cls.subject || cls.code || "Unknown"); });
+
+  Object.keys(state.attendance).forEach((dateKey) => {
+    const dayMap = state.attendance[dateKey] || {};
+    Object.keys(dayMap).forEach((classId) => {
+      const status = dayMap[classId];
+      const cls = classesById[classId];
+      if (!cls || (status !== "present" && status !== "absent")) { return; }
+      const rowData = subjectRow(cls.subject || cls.code || "Unknown");
+      if (status === "present") { rowData.present += 1; } else { rowData.absent += 1; }
+      rowData.total += 1;
+    });
   });
 
-  Object.keys(subjects).forEach((subjectKey) => {
+  Object.keys(subjects).sort((a, b) => a.localeCompare(b)).forEach((subjectKey) => {
     const rowData = subjects[subjectKey];
     const total = rowData.total;
-    const presentPct = total ? Math.round((rowData.present / total) * 100) : 0;
-    const statusText = presentPct < targetPct ? "Shortage" : "OK";
+    const presentPct = total ? Math.round((rowData.present / total) * 1000) / 10 : null;
     const row = makeEl("tr", null);
     const subjectCell = makeEl("td", null, rowData.subject);
     const presentCell = makeEl("td", "num", String(rowData.present));
     const absentCell = makeEl("td", "num", String(rowData.absent));
     const totalCell = makeEl("td", "num", String(total));
-    const pctCell = makeEl("td", "num", presentPct + "%");
-    const statusCell = makeEl("td", null, statusText);
-    if (presentPct < targetPct) { statusCell.classList.add("shortage"); }
+    const pctCell = makeEl("td", "num", presentPct === null ? "—" : presentPct + "%");
+    const statusCell = makeEl("td", null, presentPct === null ? "Not marked" : presentPct < targetPct ? "Shortage" : "Safe");
+    if (presentPct === null) {
+      statusCell.classList.add("no-data");
+    } else if (presentPct < targetPct) {
+      statusCell.classList.add("shortage");
+    } else {
+      statusCell.classList.add("safe");
+    }
     row.appendChild(subjectCell);
     row.appendChild(presentCell);
     row.appendChild(absentCell);
@@ -809,26 +833,34 @@ function handleCustomPeriodSubmit(event) {
   const instructor = document.getElementById("cp-instructor").value.trim();
   const type = document.getElementById("cp-type").value;
 
-  let ok = true;
-  const subjectMsg = subject.length < 1 ? "Subject is required." : "";
-  const startMsg = !startTime ? "Start time is required." : "";
-  const endMsg = !endTime ? "End time is required." : "";
-  const timeConflictMsg = startTime && endTime && toMinutes(endTime) <= toMinutes(startTime) ? "End time must be after start time." : "";
   const cpErrorEl = document.getElementById("cp-error");
-  if (subjectMsg) { ok = false; if (cpErrorEl) { cpErrorEl.textContent = subjectMsg; } }
-  if (startMsg) { ok = false; if (cpErrorEl) { cpErrorEl.textContent = startMsg; } }
-  if (endMsg) { ok = false; if (cpErrorEl) { cpErrorEl.textContent = endMsg; } }
-  if (timeConflictMsg) { ok = false; if (cpErrorEl) { cpErrorEl.textContent = timeConflictMsg; } }
-
-  let candidate = null;
-  if (ok) {
-    candidate = { id: editingCustomPeriodId || createId("cls"), subject: subject, code: code, day: day, startTime: startTime, endTime: endTime, room: room, instructor: instructor, type: type, isDefault: false };
-    const conflict = hasScheduleOverlap(candidate, state.timetable, editingCustomPeriodId);
-    const conflictMsg = conflict ? "This period overlaps another class on the same day." : "";
-    if (conflict) { ok = false; if (cpErrorEl) { cpErrorEl.textContent = conflictMsg; } }
+  const errors = [];
+  if (subject.length < 1) { errors.push("Subject is required."); }
+  if (!startTime) { errors.push("Start time is required."); }
+  if (!endTime) { errors.push("End time is required."); }
+  if (startTime && endTime && toMinutes(endTime) <= toMinutes(startTime)) { errors.push("End time must be after start time."); }
+  if (errors.length) {
+    if (cpErrorEl) { cpErrorEl.textContent = errors.join(" "); }
+    return;
   }
 
-  if (!ok) { return; }
+  const candidate = {
+    id: editingCustomPeriodId || createId("cls"),
+    subject: subject,
+    code: code,
+    day: day,
+    startTime: startTime,
+    endTime: endTime,
+    room: room,
+    instructor: instructor,
+    type: type,
+    isDefault: false
+  };
+  if (hasScheduleOverlap(candidate, state.timetable, editingCustomPeriodId)) {
+    if (cpErrorEl) { cpErrorEl.textContent = "This period overlaps another class on the same day. Allow a gap or use back-to-back times."; }
+    return;
+  }
+  if (cpErrorEl) { cpErrorEl.textContent = ""; }
 
   if (editingCustomPeriodId) {
     const slot = (Array.isArray(state.timetable) ? state.timetable : []).find((t) => t.id === editingCustomPeriodId);
@@ -840,7 +872,8 @@ function handleCustomPeriodSubmit(event) {
   resetCustomPeriodForm();
   renderTimetable();
   renderCustomPeriodList();
-  renderAttendanceTable(attendanceDateKey);
+  renderAttendanceTable();
+  renderDashboard();
 }
 
 let editingCustomPeriodId = null;
@@ -850,6 +883,8 @@ function resetCustomPeriodForm() {
   const form = document.getElementById("custom-period-form");
   if (!form) { return; }
   form.reset();
+  const cpErrorEl = document.getElementById("cp-error");
+  if (cpErrorEl) { cpErrorEl.textContent = ""; }
   const submitBtn = document.getElementById("cp-submit");
   if (submitBtn) { submitBtn.textContent = "Add Period"; }
 }
@@ -865,7 +900,7 @@ function renderCustomPeriodList() {
   }
   customs.forEach((slot) => {
     const item = makeEl("div", "custom-period-item");
-    const text = makeEl("div", null, slot.subject + " · " + slot.day + " " + slot.startTime + "–" + slot.endTime + " · " + (slot.room || ""));
+    const text = makeEl("div", null, slot.subject + " · " + slot.day + " " + slot.startTime + "–" + slot.endTime + (slot.room ? " · " + slot.room : ""));
     item.appendChild(text);
     const editBtn = document.createElement("button");
     editBtn.type = "button";
@@ -895,7 +930,8 @@ document.getElementById("custom-period-list").addEventListener("click", (event) 
     persistState("timetable");
     renderTimetable();
     renderCustomPeriodList();
-    renderAttendanceTable(attendanceDateKey);
+    renderAttendanceTable();
+    renderDashboard();
   }
   if (action === "edit") {
     const slot = (Array.isArray(state.timetable) ? state.timetable : []).find((t) => t.id === id);
@@ -918,6 +954,7 @@ document.getElementById("custom-period-list").addEventListener("click", (event) 
 
 /* ---------- 14. Notes module ---------- */
 let editingNoteId = null;
+let noteSearch = "";
 
 function noteMatchesSearch(note) {
   const q = noteSearch.trim().toLowerCase();
@@ -930,6 +967,9 @@ function renderNotes() {
   grid.textContent = "";
   const notes = (Array.isArray(state.notes) ? state.notes : []).filter(noteMatchesSearch);
   notes.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  if (!notes.length) {
+    grid.appendChild(makeEl("p", "empty-state", noteSearch.trim() ? "No notes match this search." : "No notes yet. Write your first study note above."));
+  }
   notes.forEach((note) => {
     const card = makeEl("article", "note-card");
     card.setAttribute("data-color", note.color || "amber");
@@ -941,7 +981,10 @@ function renderNotes() {
     const rawBody = String(note.body || "");
     if (rawBody.length > 140) { body.textContent = rawBody.slice(0, 140) + "…"; }
     card.appendChild(body);
-    const updated = makeEl("div", "note-updated", "Updated " + (note.updatedAt || ""));
+    const updatedLabel = /^\d{4}-\d{2}-\d{2}$/.test(String(note.updatedAt || ""))
+      ? "Updated " + formatLongDate(note.updatedAt)
+      : "Updated " + (note.updatedAt || "recently");
+    const updated = makeEl("div", "note-updated", updatedLabel);
     card.appendChild(updated);
     const actions = makeEl("div", "note-actions");
     const editBtn = document.createElement("button");
@@ -1020,7 +1063,6 @@ function confirmDeleteNote() {
 
 /* ---------- 15. Resources module ---------- */
 let editingResourceId = null;
-let noteSearch = "";
 
 function resourceMatchesSearch(resource) {
   const q = document.getElementById("resource-search").value.trim().toLowerCase();
@@ -1032,22 +1074,37 @@ function resourceMatchesSearch(resource) {
 
 function renderResources() {
   const grid = document.getElementById("resource-grid");
-  grid.textContent = "";
-  const resources = (Array.isArray(state.resources) ? state.resources : []).filter(resourceMatchesSearch);
   const select = document.getElementById("resource-category-filter");
   const previous = select.value;
+  const searchText = document.getElementById("resource-search").value.trim();
+  grid.textContent = "";
+  const resources = (Array.isArray(state.resources) ? state.resources : []).filter(resourceMatchesSearch);
+
   select.textContent = "";
-  const categories = ["All"];
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "All categories";
+  select.appendChild(allOption);
+  const categories = [];
   (Array.isArray(state.resources) ? state.resources : []).forEach((r) => {
     if (r.category && categories.indexOf(r.category) === -1) { categories.push(r.category); }
   });
+  categories.sort((a, b) => a.localeCompare(b));
   categories.forEach((cat) => {
     const opt = document.createElement("option");
     opt.value = cat;
     opt.textContent = cat;
-    if (cat === previous || (cat === "All" && !previous)) { opt.selected = true; }
+    if (cat === previous) { opt.selected = true; }
     select.appendChild(opt);
   });
+  if (!previous || categories.indexOf(previous) === -1) { allOption.selected = true; }
+
+  if (!resources.length) {
+    const message = searchText || previous
+      ? "No bookmarks match this search or category."
+      : "No bookmarks yet. Add your first study resource above.";
+    grid.appendChild(makeEl("p", "empty-state", message));
+  }
   resources.forEach((resource) => {
     const card = makeEl("article", "resource-card");
     const title = makeEl("h3", null, resource.title);
@@ -1080,6 +1137,25 @@ function renderResources() {
   });
 }
 
+function openResourceDialog(id) {
+  const resource = (Array.isArray(state.resources) ? state.resources : []).find((r) => r.id === id);
+  if (!resource) { return; }
+  document.getElementById("res-dialog-message").textContent = "Delete bookmark \"" + resource.title + "\"? This cannot be undone.";
+  document.getElementById("res-confirm").dataset.id = id;
+  document.getElementById("dialog-resource").showModal();
+}
+
+function confirmDeleteResource() {
+  const id = document.getElementById("res-confirm").dataset.id;
+  state.resources = (Array.isArray(state.resources) ? state.resources : []).filter((r) => r.id !== id);
+  persistState("resources");
+  document.getElementById("dialog-resource").close();
+  const filter = document.getElementById("resource-category-filter");
+  if (filter) { filter.value = ""; }
+  renderResources();
+  showToast("Bookmark deleted.");
+}
+
 function handleResourceSubmit(event) {
   event.preventDefault();
   const title = document.getElementById("resource-title").value.trim();
@@ -1090,7 +1166,8 @@ function handleResourceSubmit(event) {
   let ok = true;
   const titleMsg = title.length < 1 ? "Title is required." : "";
   setTaskError("resource-error-title", titleMsg);
-  let urlValid = true;
+  if (titleMsg) { ok = false; }
+  setTaskError("resource-error-url", "");
   if (!url) {
     setTaskError("resource-error-url", "URL is required.");
     ok = false;
@@ -1099,12 +1176,10 @@ function handleResourceSubmit(event) {
       const parsed = new URL(url);
       if (parsed.protocol !== "http:" && parsed.protocol !== "https:") { throw new Error("bad protocol"); }
     } catch (err) {
-      urlValid = false;
       setTaskError("resource-error-url", "Only http:// and https:// URLs are allowed.");
+      ok = false;
     }
   }
-  if (!urlValid) { ok = false; }
-  if (titleMsg) { ok = false; }
 
   if (!ok) { return; }
 
@@ -1116,6 +1191,7 @@ function handleResourceSubmit(event) {
   }
   persistState("resources");
   resetResourceForm();
+  document.getElementById("resource-category-filter").value = "";
   renderResources();
 }
 
@@ -1167,6 +1243,10 @@ function renderFocus() {
   if (display) { display.textContent = formatClock(focusState.remaining); }
   const startBtn = document.getElementById("focus-startpause");
   if (startBtn) { startBtn.textContent = focusState.running ? "Pause" : "Start"; }
+  const presets = document.querySelectorAll("#focus-presets .chip");
+  presets.forEach((chip) => {
+    chip.classList.toggle("active", Number(chip.getAttribute("data-seconds")) === focusState.seconds);
+  });
   updateFocusHeroStatus();
 }
 
@@ -1190,6 +1270,7 @@ function startPauseFocus() {
     renderFocus();
     return;
   }
+  if (focusState.remaining <= 0) { focusState.remaining = focusState.seconds; }
   focusState.running = true;
   const startBtn = document.getElementById("focus-startpause");
   if (startBtn) { startBtn.textContent = "Pause"; }
@@ -1205,7 +1286,11 @@ function resetFocus() {
 
 function updateFocusHeroStatus() {
   const hero = document.getElementById("focus-hero-status");
-  if (hero) { hero.textContent = formatClock(focusState.remaining) + " · Study audio: " + (getAudioPrefs().trackId || "rain-study"); }
+  if (!hero) { return; }
+  const prefs = getAudioPrefs();
+  const track = STUDY_TRACKS.filter((t) => t.id === prefs.trackId).shift() || STUDY_TRACKS[0];
+  const playback = audio && !audio.paused ? "Playing" : "Paused";
+  hero.textContent = formatClock(focusState.remaining) + " · " + track.name + " · " + playback;
 }
 
 /* ---------- 17. Study audio ---------- */
@@ -1219,7 +1304,43 @@ const audio = document.getElementById("study-audio");
 const audioErrorEl = document.getElementById("audio-error");
 
 function getAudioPrefs() {
-  return state.audioPrefs || { trackId: "rain-study", loop: true, volume: 0.65 };
+  if (!state.audioPrefs || typeof state.audioPrefs !== "object") {
+    state.audioPrefs = { trackId: "rain-study", loop: true, volume: 0.65 };
+  }
+  if (!STUDY_TRACKS.some((t) => t.id === state.audioPrefs.trackId)) { state.audioPrefs.trackId = "rain-study"; }
+  if (typeof state.audioPrefs.loop !== "boolean") { state.audioPrefs.loop = true; }
+  if (typeof state.audioPrefs.volume !== "number") { state.audioPrefs.volume = 0.65; }
+  return state.audioPrefs;
+}
+
+function showAudioError(message) {
+  if (!audioErrorEl) { return; }
+  audioErrorEl.textContent = message;
+  audioErrorEl.hidden = false;
+}
+
+function hideAudioError() {
+  if (!audioErrorEl) { return; }
+  audioErrorEl.hidden = true;
+  audioErrorEl.textContent = "";
+}
+
+function syncAudioControls() {
+  if (!audio) { return; }
+  const prefs = getAudioPrefs();
+  const track = STUDY_TRACKS.filter((t) => t.id === prefs.trackId).shift() || STUDY_TRACKS[0];
+  audio.dataset.track = track.id;
+  audio.src = track.file;
+  audio.loop = prefs.loop === true;
+  audio.volume = Math.max(0, Math.min(1, prefs.volume));
+  const volumeSlider = document.getElementById("volume-slider");
+  if (volumeSlider) { volumeSlider.value = String(Math.round(audio.volume * 100)); }
+  const loopToggle = document.getElementById("loop-toggle");
+  if (loopToggle) { loopToggle.checked = audio.loop; }
+  const radioIds = { "rain-study": "track-rain", "lofi-calm": "track-lofi", "ambient-pad": "track-ambient" };
+  const radio = document.getElementById(radioIds[track.id]);
+  if (radio) { radio.checked = true; }
+  hideAudioError();
 }
 
 function playStudyAudio() {
@@ -1227,12 +1348,16 @@ function playStudyAudio() {
   const track = STUDY_TRACKS.filter((t) => t.id === prefs.trackId).shift() || STUDY_TRACKS[0];
   if (audio.dataset.track !== track.id) { audio.dataset.track = track.id; audio.src = track.file; }
   audio.loop = prefs.loop === true;
-  audio.volume = typeof prefs.volume === "number" ? Math.max(0, Math.min(1, prefs.volume)) : 0.65;
-  const playPromise = audio.play();
-  if (playPromise && typeof playPromise.catch === "function") {
-    playPromise.catch(() => {
-      if (audioErrorEl) { audioErrorEl.textContent = "Study audio could not start. Place your royalty-free MP3 track inside assets/audio/ and press Play."; audioErrorEl.hidden = false; }
-    });
+  audio.volume = Math.max(0, Math.min(1, prefs.volume));
+  try {
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise.then(hideAudioError).catch(() => {
+        showAudioError("Study audio could not start. Press Play again or confirm the MP3 exists inside assets/audio/.");
+      });
+    }
+  } catch (err) {
+    showAudioError("Study audio could not start. Confirm the MP3 exists inside assets/audio/ and press Play.");
   }
 }
 
@@ -1242,7 +1367,7 @@ function toggleStudyAudio() {
 
 function renderAudioStatus() {
   const status = document.getElementById("audio-status");
-  if (!status) { return; }
+  if (!status || !audio) { return; }
   const prefs = getAudioPrefs();
   const track = STUDY_TRACKS.filter((t) => t.id === prefs.trackId).shift() || STUDY_TRACKS[0];
   const playing = !audio.paused;
@@ -1251,14 +1376,36 @@ function renderAudioStatus() {
 
 function initAudio() {
   if (!audio) { return; }
-  audio.addEventListener("play", () => { const btn = document.getElementById("audio-playpause"); if (btn) { btn.textContent = "Pause"; } renderAudioStatus(); });
-  audio.addEventListener("pause", () => { const btn = document.getElementById("audio-playpause"); if (btn) { btn.textContent = "Play"; } renderAudioStatus(); });
+  syncAudioControls();
+  audio.addEventListener("play", () => {
+    const btn = document.getElementById("audio-playpause");
+    if (btn) { btn.textContent = "Pause"; }
+    hideAudioError();
+    renderAudioStatus();
+    updateFocusHeroStatus();
+  });
+  audio.addEventListener("pause", () => {
+    const btn = document.getElementById("audio-playpause");
+    if (btn) { btn.textContent = "Play"; }
+    renderAudioStatus();
+    updateFocusHeroStatus();
+  });
+  audio.addEventListener("canplay", hideAudioError);
   audio.addEventListener("ended", () => { if (audio.loop) { playStudyAudio(); } });
-  audio.addEventListener("error", () => { if (audioErrorEl) { audioErrorEl.textContent = "Study audio file not found. Place your royalty-free MP3 track inside assets/audio/ and press Play."; audioErrorEl.hidden = false; } });
+  audio.addEventListener("error", () => {
+    showAudioError("Study audio file not found. Place your royalty-free MP3 track inside assets/audio/ and press Play.");
+  });
 }
 
 /* ---------- 18. Preferences ---------- */
-function openPrefs() { const modal = document.getElementById("prefs-modal"); if (modal) { modal.showModal(); } }
+function openPrefs() {
+  const modal = document.getElementById("prefs-modal");
+  if (!modal) { return; }
+  document.getElementById("prefs-display-name").value = state.prefs.displayName || "";
+  document.getElementById("prefs-theme").value = state.prefs.theme === "dark" ? "dark" : "light";
+  document.getElementById("prefs-attendance-target").value = String(Number(state.prefs.attendanceTargetPct) || 75);
+  modal.showModal();
+}
 function closePrefs() { const modal = document.getElementById("prefs-modal"); if (modal) { modal.close(); } }
 
 function handlePrefsSubmit(event) {
@@ -1272,11 +1419,16 @@ function handlePrefsSubmit(event) {
   persistState("prefs");
   applyTheme(state.prefs.theme);
   renderDashboard();
+  renderAttendanceTable();
   closePrefs();
   showToast("Preferences saved.");
 }
 
-function openResetDialog() { const modal = document.getElementById("dialog-reset"); if (modal) { modal.showModal(); } }
+function openResetDialog() {
+  closePrefs();
+  const modal = document.getElementById("dialog-reset");
+  if (modal) { modal.showModal(); }
+}
 function closeResetDialog() { const modal = document.getElementById("dialog-reset"); if (modal) { modal.close(); } }
 function confirmReset() {
   clearUniDeskKeys();
@@ -1287,9 +1439,19 @@ function confirmReset() {
   state.notes = seedNotes();
   state.resources = seedResources();
   state.audioPrefs = { trackId: "rain-study", loop: true, volume: 0.65 };
+  attendanceDateKey = getTodayKey();
+  const attendanceDateEl = document.getElementById("attendance-date");
+  if (attendanceDateEl) { attendanceDateEl.value = attendanceDateKey; }
+  if (focusInterval) { clearInterval(focusInterval); focusInterval = null; }
+  focusState.seconds = 1500;
+  focusState.remaining = 1500;
+  focusState.running = false;
+  if (audio) { audio.pause(); audio.currentTime = 0; audio.dataset.track = ""; }
   persistAll();
-  closeResetDialog();
+  syncAudioControls();
   applyTheme(state.prefs.theme);
+  closeResetDialog();
+  closePrefs();
   renderAll();
   showToast("UniDesk data has been reset.");
 }
@@ -1300,7 +1462,7 @@ function renderAll() {
   renderTasks();
   renderTimetable();
   renderCustomPeriodList();
-  renderAttendanceTable(attendanceDateKey);
+  renderAttendanceTable();
   renderNotes();
   renderResources();
   renderFocus();
@@ -1311,9 +1473,14 @@ function renderAll() {
 function init() {
   initTheme();
   initAudio();
-  const initialSection = document.getElementById("sec-dashboard");
-  if (initialSection) { initialSection.classList.add("module-active"); }
-  renderAll();
+  const rawHash = window.location.hash.replace("#", "");
+  const initialName = rawHash.startsWith("sec-") ? rawHash.slice(4) : rawHash;
+  const initialSection = document.getElementById("sec-" + (NAV_SECTIONS.includes(initialName) ? initialName : "dashboard"));
+  document.querySelectorAll("section.module").forEach((section) => { section.classList.remove("module-active"); });
+  if (initialSection) {
+    initialSection.classList.add("module-active");
+    updateNavActive(initialSection.id);
+  }
 
   const taskForm = document.getElementById("task-form");
   taskForm.addEventListener("submit", handleTaskSubmit);
@@ -1349,14 +1516,24 @@ function init() {
   const taskCancelBtn = document.getElementById("task-cancel");
   taskCancelBtn.addEventListener("click", () => { taskDialog.close(); });
 
-  document.getElementById("restore-default").addEventListener("click", () => {
+  const restoreDefaultBtn = document.getElementById("restore-default");
+  restoreDefaultBtn.addEventListener("click", () => {
+    const dialog = document.getElementById("dialog-restore");
+    if (dialog) { dialog.showModal(); }
+  });
+  const restoreConfirm = document.getElementById("restore-confirm");
+  restoreConfirm.addEventListener("click", () => {
     state.timetable = seedTimetable();
     persistState("timetable");
+    document.getElementById("dialog-restore").close();
     renderTimetable();
     renderCustomPeriodList();
-    renderAttendanceTable(attendanceDateKey);
+    renderAttendanceTable();
+    renderDashboard();
     showToast("Default college routine restored.");
   });
+  const restoreCancel = document.getElementById("restore-cancel");
+  restoreCancel.addEventListener("click", () => { document.getElementById("dialog-restore").close(); });
 
   const customForm = document.getElementById("custom-period-form");
   customForm.addEventListener("submit", handleCustomPeriodSubmit);
@@ -1388,6 +1565,10 @@ function init() {
     if (action === "delete") { openNoteDialog(id); }
   });
 
+  document.getElementById("note-confirm").addEventListener("click", () => { confirmDeleteNote(); });
+  const noteDialog = document.getElementById("dialog-note");
+  document.getElementById("note-cancel").addEventListener("click", () => { noteDialog.close(); });
+
   const resourceForm = document.getElementById("resource-form");
   resourceForm.addEventListener("submit", handleResourceSubmit);
   const resourceCancelEdit = document.getElementById("resource-cancel-edit");
@@ -1402,12 +1583,12 @@ function init() {
     const action = btn.getAttribute("data-action");
     const id = btn.getAttribute("data-id");
     if (action === "edit") { setResourceEditing(id); }
-    if (action === "delete") {
-      state.resources = (Array.isArray(state.resources) ? state.resources : []).filter((r) => r.id !== id);
-      persistState("resources");
-      renderResources();
-    }
+    if (action === "delete") { openResourceDialog(id); }
   });
+
+  document.getElementById("res-confirm").addEventListener("click", () => { confirmDeleteResource(); });
+  const resourceDialog = document.getElementById("dialog-resource");
+  document.getElementById("res-cancel").addEventListener("click", () => { resourceDialog.close(); });
 
   const focusStartPause = document.getElementById("focus-startpause");
   focusStartPause.addEventListener("click", () => { startPauseFocus(); });
@@ -1481,7 +1662,7 @@ function init() {
   attendanceDateEl.addEventListener("change", () => {
     attendanceDateKey = attendanceDateEl.value || getTodayKey();
     renderTimetable();
-    renderAttendanceTable(attendanceDateKey);
+    renderAttendanceTable();
     renderDashboard();
   });
 
@@ -1508,6 +1689,8 @@ function init() {
   window.addEventListener("hashchange", handleHashChange);
 
   renderAll();
+  persistAll();
+  if (initialSection && initialSection.id !== "sec-dashboard") { showSection(initialSection.id); }
 }
 
 document.addEventListener("DOMContentLoaded", init);

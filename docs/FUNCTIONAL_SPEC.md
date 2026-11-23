@@ -23,9 +23,10 @@ Switching sections updates a `hashchange` listener and toggles section visibilit
 
 ## 4. Timetable & attendance flows
 
-- Default routine load / restore.
+- Default routine load / restore, with confirmation before replacing the current routine.
 - Add custom period with end > start and no same-day overlap (half-open interval math).
 - Click vs double-click disambiguation with 240 ms timer + `clearTimeout`.
+- The attendance ledger aggregates every marked date for each subject; unmarked classes are excluded, and the shortage flag uses the Preferences target (default 75%).
 
 ## 5. Notes / Resources / Focus / Preferences flows
 

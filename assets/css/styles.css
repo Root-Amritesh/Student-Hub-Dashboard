@@ -28,6 +28,12 @@ html {
   --accent: #2563EB;
   --accent-hover: #1D4ED8;
   --accent-ink: #FFFFFF;
+  --focus-hero-bg: #2563EB;
+  --focus-hero-ink: #FFFFFF;
+  --danger-bg: #B91C1C;
+  --danger-bg-hover: #991B1B;
+  --danger-ink: #FFFFFF;
+  --header-h: 62px;
   --state-present-bg: #DCFCE7;
   --state-present-fg: #15803D;
   --state-absent-bg: #FEE2E2;
@@ -60,6 +66,11 @@ html {
   --accent: #60A5FA;
   --accent-hover: #93C5FD;
   --accent-ink: #0F172A;
+  --focus-hero-bg: #2563EB;
+  --focus-hero-ink: #FFFFFF;
+  --danger-bg: #DC2626;
+  --danger-bg-hover: #B91C1C;
+  --danger-ink: #FFFFFF;
   --state-present-bg: #14532D;
   --state-present-fg: #86EFAC;
   --state-absent-bg: #7F1D1D;
@@ -166,10 +177,14 @@ textarea {
 /* ---------- Sticky sidebar navigation (position: sticky) ---------- */
 #sidebar-nav {
   position: sticky;
-  top: 0;
+  top: var(--header-h);
   align-self: flex-start;
-  height: 100vh;
+  flex: 0 0 224px;
+  width: 224px;
+  height: calc(100vh - var(--header-h));
   padding: 1.25rem 0.75rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-subtle);
 }
 
 .nav-list {
@@ -202,9 +217,8 @@ textarea {
 
 /* ---------- Main ---------- */
 .app-main {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
-  width: 100%;
   padding: 1.5rem 1.5rem 4rem;
 }
 
@@ -331,20 +345,19 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--focus-hero-bg);
+  color: var(--focus-hero-ink);
   border: none;
 }
 
 .focus-hero h3 {
-  color: var(--accent-ink);
+  color: var(--focus-hero-ink);
   margin-bottom: 0.15rem;
 }
 
 .focus-hero-status {
   margin: 0;
-  color: var(--accent-ink);
-  opacity: 0.9;
+  color: var(--focus-hero-ink);
 }
 
 .focus-hero-copy {
@@ -354,8 +367,8 @@ textarea {
 }
 
 .btn-hero {
-  background: var(--accent-ink);
-  color: var(--accent);
+  background: var(--focus-hero-ink);
+  color: var(--focus-hero-bg);
   border: none;
 }
 
@@ -397,12 +410,12 @@ textarea {
 }
 
 .btn-danger {
-  background: var(--state-absent-fg);
-  color: #FFFFFF;
+  background: var(--danger-bg);
+  color: var(--danger-ink);
 }
 
 .btn-danger:hover {
-  background: #991B1B;
+  background: var(--danger-bg-hover);
 }
 
 .btn-sm {
@@ -780,6 +793,59 @@ textarea:focus {
   gap: 0.5rem;
 }
 
+.date-picker input {
+  width: auto;
+}
+
+.routine-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.period-card .task-top {
+  padding-right: 4.4rem;
+}
+
+.status-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-dot.status-present {
+  background: var(--state-present-bg);
+  color: var(--state-present-fg);
+}
+
+.status-dot.status-absent {
+  background: var(--state-absent-bg);
+  color: var(--state-absent-fg);
+}
+
+.status-dot.status-idle {
+  background: var(--state-idle-bg);
+  color: var(--state-idle-fg);
+}
+
+.period-column.is-today h4 {
+  color: var(--accent);
+}
+
+.period-form-card {
+  flex: 1 1 100%;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 1rem;
+}
+
 /* ---------- Data table ---------- */
 .table-wrap {
   overflow-x: auto;
@@ -812,6 +878,22 @@ textarea:focus {
 .shortage {
   color: var(--state-absent-fg);
   font-weight: 700;
+}
+
+.safe {
+  color: var(--state-present-fg);
+  font-weight: 700;
+}
+
+.no-data {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.task-grid .empty-state,
+.note-grid .empty-state,
+.resource-grid .empty-state {
+  flex: 1 1 100%;
 }
 
 /* ---------- Notes ---------- */
@@ -874,8 +956,9 @@ textarea:focus {
 }
 
 .note-actions button {
-  border: 1px solid rgba(15, 23, 42, 0.2);
-  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   border-radius: 999px;
   padding: 0.2rem 0.6rem;
   font-size: 0.75rem;
@@ -1013,6 +1096,7 @@ textarea:focus {
 
 .custom-period-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
@@ -1065,11 +1149,7 @@ textarea:focus {
 }
 
 .toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 81;
+  position: static;
   background: var(--text-primary);
   color: var(--bg-canvas);
   padding: 0.7rem 1.2rem;
@@ -1117,7 +1197,7 @@ textarea:focus {
   .note-card,
   .resource-card {
     flex: 1 1 calc(50% - 8px);
-    min-width: 280px;
+    min-width: 0;
   }
 
   .period-grid {
@@ -1135,6 +1215,19 @@ textarea:focus {
 
   .field {
     flex: 1 1 calc(50% - 12px);
+  }
+}
+
+/* Tablet : slimmer sidebar, single-column form panels */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #sidebar-nav {
+    flex-basis: 184px;
+    width: 184px;
+    padding: 1rem 0.5rem;
+  }
+
+  .app-main {
+    padding: 1.25rem 1rem 3rem;
   }
 }
 
@@ -1189,12 +1282,34 @@ textarea:focus {
 
   .mobile-nav-link {
     display: block;
-    padding: 0.4rem 0.55rem;
+    padding: 0.35rem 0.2rem;
     border-radius: 999px;
     color: var(--text-secondary);
     text-decoration: none;
-    font-size: 0.78rem;
+    font-size: 0.68rem;
     font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .header-inner {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .brand-name {
+    font-size: 1.15rem;
+  }
+
+  .header-actions .btn-sm {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  .routine-tools {
+    width: 100%;
+  }
+
+  .app-footer {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
 
   .mobile-nav-link.active {
