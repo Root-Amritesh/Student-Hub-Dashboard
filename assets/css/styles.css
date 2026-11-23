@@ -227,6 +227,7 @@ textarea {
   margin: 0 auto;
   position: static;
   display: none;
+  scroll-margin-top: calc(var(--header-h) + 16px);
 }
 
 .module.module-active {
