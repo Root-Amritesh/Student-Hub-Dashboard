@@ -18,19 +18,37 @@
    ========================================================================== */
 
 /* ---------- 1. Isolated college routine configuration ----------
-   Paste your fixed Mon-Sat college daily routine here.
+   Real weekly routine transcribed from the Bennett University LMS
+   (Semester 1, 2026-2027) screenshots dated 16-22 Nov 2026.
+   Sat and Sun have no scheduled classes, so they are intentionally empty.
    Keep 24-hour "HH:MM" strings so sorting and overlap math remain exact. */
 const DEFAULT_COLLEGE_TIMETABLE = [
-  { id: "cls_mon_1", day: "Mon", startTime: "09:00", endTime: "10:00", subject: "Web Development", code: "2026FSWD100", room: "B-204", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_mon_2", day: "Mon", startTime: "10:00", endTime: "12:00", subject: "Web Development Lab", code: "2026FSWD100", room: "SCSET Lab-2", instructor: "Faculty Team", type: "Lab", isDefault: true },
-  { id: "cls_tue_1", day: "Tue", startTime: "09:00", endTime: "10:00", subject: "Data Structures", code: "2026CS101", room: "B-204", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_tue_2", day: "Tue", startTime: "10:00", endTime: "11:00", subject: "Database Management", code: "2026CS102", room: "B-105", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_wed_1", day: "Wed", startTime: "09:00", endTime: "10:00", subject: "Computer Networks", code: "2026CS103", room: "B-204", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_wed_2", day: "Wed", startTime: "10:00", endTime: "12:00", subject: "Web Development Lab", code: "2026FSWD100", room: "SCSET Lab-2", instructor: "Faculty Team", type: "Lab", isDefault: true },
-  { id: "cls_thu_1", day: "Thu", startTime: "09:00", endTime: "10:00", subject: "Software Engineering", code: "2026CS104", room: "B-101", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_thu_2", day: "Thu", startTime: "10:00", endTime: "11:00", subject: "Operating Systems", code: "2026CS106", room: "B-204", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_fri_1", day: "Fri", startTime: "09:00", endTime: "10:00", subject: "Web Development", code: "2026FSWD100", room: "B-204", instructor: "Dr. Himanshu Sharma", type: "Lecture", isDefault: true },
-  { id: "cls_fri_2", day: "Fri", startTime: "10:00", endTime: "12:00", subject: "Web Development Lab", code: "2026FSWD100", room: "SCSET Lab-2", instructor: "Faculty Team", type: "Lab", isDefault: true },
+  // Monday — 16 Nov 2026
+  { id: "cls_mon_web_0820", day: "Mon", startTime: "08:20", endTime: "09:20", subject: "Web Development", code: "2026FSWD100", room: "P-CC-121", instructor: "Himanshu Sharma", type: "Lecture", isDefault: true },
+  { id: "cls_mon_calc_0925", day: "Mon", startTime: "09:25", endTime: "10:25", subject: "Calculus", code: "2026MATH102", room: "P-CC-310", instructor: "Shaily", type: "Lecture", isDefault: true },
+  { id: "cls_mon_envs_1345", day: "Mon", startTime: "13:45", endTime: "14:45", subject: "Environmental Studies I", code: "2026ENVS151", room: "P-CC-121", instructor: "Vaishali", type: "Lecture", isDefault: true },
+  { id: "cls_mon_trep_1450", day: "Mon", startTime: "14:50", endTime: "15:50", subject: "Transdisciplinary Research, Entrepreneurship & Project (TREP)", code: "TREP101", room: "P-CC-315", instructor: "Mukund Pratap Singh (Indu Sharma)", type: "Tutorial", isDefault: true },
+  { id: "cls_mon_eece_prac1_1555", day: "Mon", startTime: "15:55", endTime: "16:55", subject: "Introduction to Electrical and Electronics Engineering", code: "2026EECE110", room: "214-A-LA", instructor: "Roshni Mishra", type: "Practical", isDefault: true },
+  { id: "cls_mon_eece_prac2_1700", day: "Mon", startTime: "17:00", endTime: "18:00", subject: "Introduction to Electrical and Electronics Engineering", code: "2026EECE110", room: "214-A-LA", instructor: "Roshni Mishra", type: "Practical", isDefault: true },
+  // Tuesday — 17 Nov 2026
+  { id: "cls_tue_sports_0820", day: "Tue", startTime: "08:20", endTime: "09:20", subject: "Sports-I: Basic Sports Training Fundamentals & Skills", code: "SPLA101", room: "SCSET", instructor: "Dummy Faculty", type: "Lecture", isDefault: true },
+  { id: "cls_tue_eece_tut_0925", day: "Tue", startTime: "09:25", endTime: "10:25", subject: "Introduction to Electrical and Electronics Engineering", code: "2026EECE110", room: "128-N-CA", instructor: "Mohan Kumar Paswan", type: "Tutorial", isDefault: true },
+  { id: "cls_tue_dd_lect_1030", day: "Tue", startTime: "10:30", endTime: "11:30", subject: "Digital Design", code: "2026CSAE101", room: "011-N-CC", instructor: "Ashok Rai", type: "Lecture", isDefault: true },
+  { id: "cls_tue_dd_prac1_1240", day: "Tue", startTime: "12:40", endTime: "13:40", subject: "Digital Design", code: "2026CSAE101", room: "105-A-LA", instructor: "Mahadev Ajagalla", type: "Practical", isDefault: true },
+  { id: "cls_tue_dd_prac2_1345", day: "Tue", startTime: "13:45", endTime: "14:45", subject: "Digital Design", code: "2026CSAE101", room: "105-A-LA", instructor: "Mahadev Ajagalla", type: "Practical", isDefault: true },
+  { id: "cls_tue_eece_lect_1555", day: "Tue", startTime: "15:55", endTime: "16:55", subject: "Introduction to Electrical and Electronics Engineering", code: "2026EECE110", room: "P-CB-304", instructor: "Mahesh Kumawat", type: "Lecture", isDefault: true },
+  // Wednesday — 18 Nov 2026
+  { id: "cls_wed_calc_tut_0820", day: "Wed", startTime: "08:20", endTime: "09:20", subject: "Calculus", code: "2026MATH102", room: "127-N-CA", instructor: "K. M. Kavya", type: "Tutorial", isDefault: true },
+  { id: "cls_wed_ctp_lect_1240", day: "Wed", startTime: "12:40", endTime: "13:40", subject: "Computational Thinking and Programming", code: "2026CSAE100", room: "P-CC-315", instructor: "Gopal Rawat", type: "Lecture", isDefault: true },
+  { id: "cls_wed_calc_lect_1345", day: "Wed", startTime: "13:45", endTime: "14:45", subject: "Calculus", code: "2026MATH102", room: "011-N-CC", instructor: "Shaily", type: "Lecture", isDefault: true },
+  { id: "cls_wed_eece_lect_1555", day: "Wed", startTime: "15:55", endTime: "16:55", subject: "Introduction to Electrical and Electronics Engineering", code: "2026EECE110", room: "P-CC-310", instructor: "Mahesh Kumawat", type: "Lecture", isDefault: true },
+  // Thursday — 19 Nov 2026
+  { id: "cls_thu_ctp_prac1_1240", day: "Thu", startTime: "12:40", endTime: "13:40", subject: "Computational Thinking and Programming", code: "2026CSAE100", room: "B-LA-210", instructor: "Amit Kumar", type: "Practical", isDefault: true },
+  { id: "cls_thu_ctp_prac2_1345", day: "Thu", startTime: "13:45", endTime: "14:45", subject: "Computational Thinking and Programming", code: "2026CSAE100", room: "B-LA-210", instructor: "Amit Kumar", type: "Practical", isDefault: true },
+  { id: "cls_thu_calc_lect_1450", day: "Thu", startTime: "14:50", endTime: "15:50", subject: "Calculus", code: "2026MATH102", room: "011-N-CC", instructor: "Shaily", type: "Lecture", isDefault: true },
+  // Friday — 20 Nov 2026
+  { id: "cls_fri_dd_lect_0820", day: "Fri", startTime: "08:20", endTime: "09:20", subject: "Digital Design", code: "2026CSAE101", room: "P-CC-018", instructor: "Ashok Rai", type: "Lecture", isDefault: true },
+  { id: "cls_fri_ctp_lect_0925", day: "Fri", startTime: "09:25", endTime: "10:25", subject: "Computational Thinking and Programming", code: "2026CSAE100", room: "P-CC-315", instructor: "Gopal Rawat", type: "Lecture", isDefault: true },
 ];
 
 /* ---------- 2. Storage helpers : unidesk.v1.* keys + in-memory fallback ---------- */
@@ -146,6 +164,30 @@ function seedTimetable() {
   return DEFAULT_COLLEGE_TIMETABLE.map((slot) => Object.assign({}, slot));
 }
 
+/* Existing browsers may still hold the old sample routine from before the
+   real college timetable was entered. Detect it by its sample-only subjects
+   and swap it once; any user-added (non-default) periods are kept. */
+const LEGACY_SAMPLE_SUBJECTS = [
+  "Web Development Lab", "Data Structures", "Database Management",
+  "Computer Networks", "Software Engineering", "Operating Systems",
+];
+const LEGACY_SAMPLE_IDS = ["cls_mon_1", "cls_mon_2", "cls_tue_1", "cls_tue_2", "cls_wed_1", "cls_wed_2", "cls_thu_1", "cls_thu_2", "cls_fri_1", "cls_fri_2"];
+
+function isLegacySampleSlot(slot) {
+  return Boolean(slot && slot.isDefault && (
+    LEGACY_SAMPLE_IDS.indexOf(slot.id) !== -1 ||
+    LEGACY_SAMPLE_SUBJECTS.indexOf(slot.subject) !== -1
+  ));
+}
+
+function loadTimetable() {
+  const stored = loadState("timetable", null);
+  if (!Array.isArray(stored) || stored.length === 0) { return seedTimetable(); }
+  if (!stored.some(isLegacySampleSlot)) { return stored; }
+  const customs = stored.filter((slot) => slot && !slot.isDefault);
+  return seedTimetable().concat(customs);
+}
+
 function seedNotes() {
   const today = getTodayKey();
   return [
@@ -189,7 +231,7 @@ function seedResources() {
 const state = {
   prefs: loadState("prefs", { displayName: "Amritesh", theme: "light", attendanceTargetPct: 75 }),
   tasks: loadState("tasks", seedTasks()),
-  timetable: loadState("timetable", seedTimetable()),
+  timetable: loadTimetable(),
   attendance: loadState("attendance", {}),
   notes: loadState("notes", seedNotes()),
   resources: loadState("resources", seedResources()),
