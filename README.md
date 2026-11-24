@@ -54,18 +54,18 @@ All asset paths are relative (`./assets/...`), so the app runs from a single ext
 
 ## Offline LMS ZIP submission
 
-1. Create a single root folder `UniDesk_StudentHub_2026FSWD100/`.
-2. Inside it place: `index.html`, `README.md`, `.nojekyll`, `docs/`, `assets/`.
-3. Compress the parent folder into `UniDesk_StudentHub_2026FSWD100.zip`.
+1. Create a single root folder `S26CSEU0943-WebDevProject/`.
+2. Inside it place: `index.html`, `README.md`, `.nojekyll`, `docs/`, `assets/` and the report PDF.
+3. Compress the parent folder into `S26CSEU0943-WebDevProject.zip`.
 4. Each team member uploads the **ZIP** and the **Word/PDF report** individually before **27/11/2026**.
 
 ### Ready-to-submit files (`submission/`)
 
 | File | Purpose |
 |---|---|
-| `UniDesk_StudentHub_2026FSWD100.zip` | Verified 23-entry offline package (root folder + local assets + docs + 6 screenshots) |
-| `UniDesk_Student_Hub_Project_Report.docx` | Editable 20-page report — fill `[FILL]` fields (section, dates, signatures); enrollments included |
-| `UniDesk_Student_Hub_Project_Report.pdf` | Black-and-white PDF generated from the edited DOCX, ready to upload |
+| `S26CSEU0943-WebDevProject.zip` | Final 24-entry offline package (project + report PDF + local assets + docs + 6 screenshots) |
+| `UniDesk_Student_Hub_Project_Report.docx` | Editable 20-page report — fill `[FILL]` fields (dates, signatures); section and enrollments included |
+| `UniDesk_Student_Hub_Project.pdf` | Black-and-white PDF generated from the edited DOCX, ready to upload |
 | `LMS_SUBMISSION_TEXT.txt` | Exact project title, team-details data and upload checklist |
 | `README_FILL_BEFORE_SUBMISSION.md` | Final fill-and-upload instructions |
 

@@ -14,7 +14,7 @@
 
 ## 2. LMS ZIP submission
 
-- Root folder `UniDesk_StudentHub_2026FSWD100/` containing `index.html`, `README.md`, `.nojekyll`, `docs/`, `assets/`.
+- Root folder `S26CSEU0943-WebDevProject/` containing `index.html`, `README.md`, `.nojekyll`, `docs/`, `assets/` and `UniDesk_Student_Hub_Project.pdf`.
 - Open `index.html` directly in Chrome/Edge; verify relative asset paths (`./assets/...`).
 - Compress to ZIP; each member uploads ZIP + Word/PDF report individually before 27/11/2026.
 

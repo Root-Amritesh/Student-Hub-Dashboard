@@ -5,9 +5,9 @@ Project title (paste into the online text submission box):
 UniDesk Student Hub - A Zero-Dependency Responsive Study Workspace
 
 Files to upload through the designated submission link:
-1. UniDesk_StudentHub_2026FSWD100.zip
-2. UniDesk_Student_Hub_Project_Report.pdf
-   (Use the .docx instead only if the LMS explicitly requires Word.)
+1. S26CSEU0943-WebDevProject.zip
+2. UniDesk_Student_Hub_Project.pdf
+   (The PDF is also included inside the ZIP for convenience, but upload it separately as instructed.)
 
 Deadline: 27 / 11 / 2026
 

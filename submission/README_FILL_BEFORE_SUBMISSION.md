@@ -27,15 +27,15 @@ Then regenerate the PDF from the edited DOCX:
 ```powershell
 & 'C:\Users\Amritesh\AppData\Local\Temp\opencode\docx_to_pdf.ps1' `
   -Docx 'D:\01_User\Documents\Default Project\submission\UniDesk_Student_Hub_Project_Report.docx' `
-  -Pdf  'D:\01_User\Documents\Default Project\submission\UniDesk_Student_Hub_Project_Report.pdf'
+  -Pdf  'D:\01_User\Documents\Default Project\submission\UniDesk_Student_Hub_Project.pdf'
 ```
 
 > If that helper script is no longer present, open the DOCX in Word → File → Save As → PDF.
 
 ## 2. Files to upload on LMS (each of the four students uploads both)
 
-- `UniDesk_StudentHub_2026FSWD100.zip` — 23 entries, integrity verified, all assets local.
-- `UniDesk_Student_Hub_Project_Report.pdf` — black-and-white report with all six screenshots and no footer/appendix clutter.
+- `S26CSEU0943-WebDevProject.zip` — 24 entries, integrity verified, all assets local; the report PDF is included inside it too.
+- `UniDesk_Student_Hub_Project.pdf` — black-and-white report with all six screenshots and no footer/appendix clutter. Upload this separately as instructed, even though a copy is inside the ZIP.
 
 ## 3. LMS text box
 
